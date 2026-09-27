@@ -28,6 +28,9 @@ def test_products_render_when_images_fail(page: Page, users: dict):
     login_page.goto()
     login_page.login(users["valid"]["username"], users["valid"]["password"])
 
+    # Wait until all requests (including aborted ones) have settled.
+    page.wait_for_load_state("networkidle")
+
     inventory = InventoryPage(page)
     expect(inventory.items).to_have_count(6)
     assert len(blocked) > 0, "expected at least one image request to be intercepted"
