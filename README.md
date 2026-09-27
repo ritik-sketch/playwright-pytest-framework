@@ -70,7 +70,7 @@ pytest                           # everything
 pytest -m smoke                  # only smoke tests
 pytest -m "not e2e"              # skip the long journey
 pytest --headed                  # watch the browser
-pytest --html=test-results/report.html --self-contained-html
+pytest --html=reports/report.html --self-contained-html
 ```
 
 Run against another environment without touching code:
