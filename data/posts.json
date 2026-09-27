@@ -1,0 +1,13 @@
+{
+  "new_post": {
+    "userId": 1,
+    "title": "QA automation framework",
+    "body": "Created by the API test layer of playwright-pytest-framework"
+  },
+  "updated_post": {
+    "userId": 1,
+    "title": "QA automation framework (updated)",
+    "body": "Updated by the API test layer"
+  },
+  "invalid_ids": [0, 101, 9999]
+}
