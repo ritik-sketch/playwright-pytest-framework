@@ -20,6 +20,7 @@ from scratch on a public site so the whole thing can be shared.
 | Defect reporting | `docs/defect-report-template.md` | Template + a real example from the app |
 | Root cause analysis | `docs/rca-template.md` | Template + a worked flaky-test example |
 | CI | `.github/workflows/tests.yml` | Runs on every push, screenshots and HTML report as artifacts |
+| AI-assisted workflow | `docs/ai-assisted-testing.md`, `prompts/`, `CLAUDE.md` | Where AI fits in the QA cycle, the prompt templates I use, and agent instructions for this repo |
 
 ## Stack
 
@@ -49,7 +50,9 @@ playwright-pytest-framework/
 ├── utils/
 │   ├── config.py              # BASE_URL from environment
 │   └── data_loader.py         # JSON loader
-├── docs/                      # test plan, test cases, defect + RCA templates
+├── docs/                      # test plan, test cases, defect + RCA, AI-assisted workflow
+├── prompts/                   # reusable prompt templates (test design, triage, RCA)
+├── CLAUDE.md                  # conventions for AI coding agents working in this repo
 ├── conftest.py                # shared fixtures (users, logged_in_page)
 ├── pytest.ini                 # markers, paths, default flags
 ├── requirements.txt
@@ -94,6 +97,8 @@ $env:BASE_URL="https://staging.example.com"; pytest   # PowerShell
   the most common source of flaky tests (see the RCA example in `docs/`).
 - **Environment from variables** - `BASE_URL` switches environments; nothing is
   hard-coded in tests.
+- **AI drafts, engineer verifies** - AI is used for test design, triage and RCA drafts
+  (`docs/ai-assisted-testing.md`); every output is validated before it enters the suite.
 - **Screenshots on failure, report in CI** - `--screenshot=only-on-failure` and
   pytest-html are uploaded as artifacts so a red run can be debugged without re-running.
 
