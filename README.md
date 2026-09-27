@@ -2,8 +2,10 @@
 
 ![tests](https://github.com/ritik-sketch/playwright-pytest-framework/actions/workflows/tests.yml/badge.svg)
 
-End-to-end test automation framework in Python, built with Playwright and pytest
-against the public demo app [Swag Labs](https://www.saucedemo.com).
+End-to-end test automation framework in Python: Playwright UI tests against
+[Swag Labs](https://www.saucedemo.com) and a requests-based API layer against
+[JSONPlaceholder](https://jsonplaceholder.typicode.com), with the same Postman
+checks run by Newman in CI.
 
 It mirrors the way I work as a QA engineer on a production SaaS product - test
 plan, test cases, automation, defect reporting and root cause analysis - rebuilt
@@ -14,8 +16,10 @@ from scratch on a public site so the whole thing can be shared.
 | Part | Where | What it shows |
 |---|---|---|
 | Test plan | `docs/test-plan.md` | Scope, approach, entry/exit criteria, risks |
-| Test cases | `docs/test-cases.md` | 18 manual cases (P0-P2) mapped to the automated tests |
-| Automation | `pages/`, `tests/`, `conftest.py` | Page Object Model, fixtures, data-driven and E2E tests |
+| Test cases | `docs/test-cases.md` | 25 cases (P0-P2), UI and API, mapped to the automated tests |
+| UI automation | `pages/`, `tests/`, `conftest.py` | Page Object Model, fixtures, data-driven and E2E tests |
+| API automation | `api/`, `tests/api/`, `data/schemas/` | requests client, service objects, JSON schema validation, negative cases |
+| Postman + Newman | `postman/` | Postman collection with test scripts, executed in CI |
 | Network interception | `tests/test_network.py` | `page.route()` to simulate failing requests |
 | Defect reporting | `docs/defect-report-template.md` | Template + a real example from the app |
 | Root cause analysis | `docs/rca-template.md` | Template + a worked flaky-test example |
@@ -25,7 +29,9 @@ from scratch on a public site so the whole thing can be shared.
 ## Stack
 
 - Python 3.13, pytest, pytest-playwright, pytest-html
-- Playwright (Chromium)
+- Playwright (Chromium) for UI
+- requests + jsonschema for API
+- Postman collection run with Newman
 - GitHub Actions
 
 ## Project structure
@@ -38,17 +44,26 @@ playwright-pytest-framework/
 │   ├── inventory_page.py
 │   ├── cart_page.py
 │   └── checkout_page.py
+├── api/                       # API layer
+│   ├── client.py              #   requests.Session wrapper with logging
+│   └── posts_api.py           #   service object for /posts (API "page object")
 ├── tests/
 │   ├── test_smoke.py          # app is up
 │   ├── test_login.py          # valid + data-driven invalid logins
 │   ├── test_inventory.py      # cart badge, sorting
 │   ├── test_checkout.py       # full purchase journey (e2e)
-│   └── test_network.py        # route interception
+│   ├── test_network.py        # route interception
+│   └── api/
+│       └── test_posts.py      # status, schema, data integrity, 404s
+├── postman/
+│   └── jsonplaceholder.postman_collection.json
 ├── data/
 │   ├── users.json             # test users and expected errors
-│   └── checkout.json          # products and customer info
+│   ├── checkout.json          # products and customer info
+│   ├── posts.json             # API payloads and invalid ids
+│   └── schemas/post.json      # JSON schema for a Post
 ├── utils/
-│   ├── config.py              # BASE_URL from environment
+│   ├── config.py              # BASE_URL / API_BASE_URL from environment
 │   └── data_loader.py         # JSON loader
 ├── docs/                      # test plan, test cases, defect + RCA, AI-assisted workflow
 ├── prompts/                   # reusable prompt templates (test design, triage, RCA)
@@ -69,18 +84,22 @@ python -m venv .venv
 pip install -r requirements.txt
 playwright install chromium
 
-pytest                           # everything
+pytest                           # everything (UI + API)
+pytest -m api                    # API tests only, no browser, ~1 s
 pytest -m smoke                  # only smoke tests
 pytest -m "not e2e"              # skip the long journey
 pytest --headed                  # watch the browser
 pytest --html=reports/report.html --self-contained-html
+
+npx newman run postman/jsonplaceholder.postman_collection.json   # Postman collection (needs Node)
 ```
 
 Run against another environment without touching code:
 
 ```bash
-BASE_URL=https://staging.example.com pytest      # macOS / Linux
-$env:BASE_URL="https://staging.example.com"; pytest   # PowerShell
+BASE_URL=https://staging.example.com pytest            # macOS / Linux
+$env:BASE_URL="https://staging.example.com"; pytest    # PowerShell
+API_BASE_URL=https://api.example.com pytest -m api     # API layer
 ```
 
 ## Design decisions
@@ -93,6 +112,11 @@ $env:BASE_URL="https://staging.example.com"; pytest   # PowerShell
   browser so tests describe behaviour, not setup.
 - **Data-driven negatives** - the login validation matrix lives in `data/users.json`;
   adding a case is one JSON row, no new test code.
+- **Service objects for APIs** - `api/posts_api.py` is to endpoints what a page object is
+  to screens: tests call `posts.create(payload)`, never build URLs. One `requests.Session`
+  per run, every call logged with status and latency.
+- **Contract first for APIs** - every response is checked for status code, JSON schema
+  (`data/schemas/`) and data integrity, plus negative cases for unknown ids.
 - **`expect()` over manual reads** - Playwright's `expect` auto-waits, which removes
   the most common source of flaky tests (see the RCA example in `docs/`).
 - **Environment from variables** - `BASE_URL` switches environments; nothing is
@@ -110,7 +134,8 @@ $env:BASE_URL="https://staging.example.com"; pytest   # PowerShell
 - [x] Network interception with `page.route()`
 - [x] Test plan, test cases, defect and RCA templates
 - [x] GitHub Actions CI with HTML report
-- [ ] API test layer (requests + pytest) against a public REST API
+- [x] API test layer (requests + pytest) with JSON schema validation
+- [x] Postman collection executed by Newman in CI
 - [ ] Allure or similar reporting
 - [ ] Parallel runs with pytest-xdist
 

@@ -25,10 +25,16 @@ jobs:
       - name: Install Chromium
         run: playwright install --with-deps chromium
 
-      - name: Run tests
-        run: mkdir -p reports && pytest --html=reports/report.html --self-contained-html
+      - name: Run API tests
+        run: mkdir -p reports && pytest -m api --html=reports/api-report.html --self-contained-html
 
-      - name: Upload screenshots and report
+      - name: Run UI tests
+        run: pytest -m "not api" --html=reports/ui-report.html --self-contained-html
+
+      - name: Run Postman collection (Newman)
+        run: npx --yes newman run postman/jsonplaceholder.postman_collection.json --reporters cli,junit --reporter-junit-export reports/newman.xml
+
+      - name: Upload screenshots and reports
         if: always()
         uses: actions/upload-artifact@v4
         with:

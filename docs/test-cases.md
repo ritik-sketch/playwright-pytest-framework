@@ -41,7 +41,21 @@ Priority: P0 = blocks release, P1 = must fix before release, P2 = should fix.
 |---|---|---|---|---|---|
 | TC-18 | Products render without images | Block image requests, login | 6 product cards still render with names and prices | P2 | test_network.py::test_products_render_when_images_fail |
 
+
+## API - /posts (JSONPlaceholder)
+
+| ID | Title | Steps | Expected result | Priority | Automated |
+|---|---|---|---|---|---|
+| TC-19 | List posts | GET /posts | 200, JSON array of 100 items | P0 | tests/api/test_posts.py::test_list_posts_returns_collection |
+| TC-20 | Get post by id | GET /posts/1 | 200, body matches Post JSON schema | P0 | tests/api/test_posts.py::test_get_post_matches_schema |
+| TC-21 | Create post | POST /posts with valid JSON | 201, new id assigned, title and body echoed back | P0 | tests/api/test_posts.py::test_create_post_returns_new_id |
+| TC-22 | Update post | PUT /posts/1 with changed title | 200, id unchanged, title updated | P1 | tests/api/test_posts.py::test_update_post_echoes_changes |
+| TC-23 | Delete post | DELETE /posts/1 | 200 | P1 | tests/api/test_posts.py::test_delete_post_succeeds |
+| TC-24 | Unknown post id | GET /posts/0, /posts/101, /posts/9999 | 404 for each | P1 | tests/api/test_posts.py::test_get_unknown_post_returns_404 |
+| TC-25 | Response time budget | GET /posts | responds under 2 s | P2 | postman collection (Newman) |
+
 ## Coverage summary
 
-- Total: 18 cases; P0: 5, P1: 8, P2: 5
-- Automated: 10 (all P0, most P1); manual/exploratory: 8
+- Total: 25 cases; P0: 8, P1: 11, P2: 6
+- Automated: 19 (all P0, most P1); manual/exploratory: 6
+- UI: TC-01 to TC-18 (Playwright); API: TC-19 to TC-25 (requests + Postman/Newman)

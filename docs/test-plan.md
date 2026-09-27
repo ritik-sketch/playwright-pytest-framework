@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Application | Swag Labs demo e-commerce web app |
-| Environment | https://www.saucedemo.com (public demo, treated as "staging") |
+| Application | Swag Labs demo e-commerce web app (UI) and JSONPlaceholder (API) |
+| Environment | https://www.saucedemo.com and https://jsonplaceholder.typicode.com (public demos, treated as "staging") |
 | Prepared by | Ritik Chaturvedi |
 | Version | 1.0 |
 
@@ -21,6 +21,7 @@ repeatable checks so they run on every push.
 - Cart: items shown match selection, proceed to checkout
 - Checkout: customer info validation, order summary, order completion
 - Resilience: page renders when image requests fail
+- API: /posts resource of JSONPlaceholder - status codes, JSON schema, data integrity, error handling
 
 ### Out of scope
 - Performance / load testing
@@ -36,6 +37,8 @@ repeatable checks so they run on every push.
 | Automated UI (Playwright) | Stable, repeatable flows | `tests/` folder, Page Object Model |
 | Data-driven | Login validation matrix | `data/users.json` + `pytest.mark.parametrize` |
 | Network interception | Failure simulation | `page.route()` in `tests/test_network.py` |
+| Automated API (requests) | Contract and data checks without a browser | `tests/api/`, service objects in `api/`, JSON schemas in `data/schemas/` |
+| Postman + Newman | Same API checks in Postman, executed in CI | `postman/` collection, Newman step in the workflow |
 | CI | Every push and pull request | GitHub Actions, screenshots on failure |
 
 ## 4. Test users (provided by the app)
@@ -61,6 +64,7 @@ Exit: all P0/P1 test cases executed, no open P0 defects, automated suite green i
 ## 7. Deliverables
 
 - `docs/test-cases.md` - manual test cases with automation mapping
-- `tests/` - automated suite
+- `tests/` - automated UI and API suites
+- `postman/` - Postman collection run by Newman in CI
 - `docs/defect-report-template.md`, `docs/rca-template.md` - reporting formats
 - CI run history on GitHub Actions
